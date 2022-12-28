@@ -10,6 +10,7 @@ local M = {}
 
 local SOURCES = {
     ["cargo"] = "mason-core.installer.registry.providers.cargo",
+    ["composer"] = "mason-core.installer.registry.providers.composer",
     ["gem"] = "mason-core.installer.registry.providers.gem",
     ["generic"] = "mason-core.installer.registry.providers.generic",
     ["github"] = "mason-core.installer.registry.providers.github",

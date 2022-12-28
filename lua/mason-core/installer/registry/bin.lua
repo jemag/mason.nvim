@@ -9,6 +9,9 @@ local expr = require "mason-core.installer.registry.expr"
 local M = {}
 
 local delegates = {
+    ["composer"] = function (target)
+        return require("mason-core.managers.v2.composer").bin_path(target)
+    end,
     ["opam"] = function(target)
         return require("mason-core.managers.v2.opam").bin_path(target)
     end,
