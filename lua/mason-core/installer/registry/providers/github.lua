@@ -48,7 +48,7 @@ local build = {
                 end,
                 win = function()
                     local powershell = require "mason-core.managers.powershell"
-                    return powershell.script(source.build.run, {}, ctx.spawn)
+                    return powershell.command(source.build.run, {}, ctx.spawn)
                 end,
             })
         end)
