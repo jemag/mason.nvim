@@ -1,4 +1,6 @@
+local _ = require "mason-core.functional"
 local Result = require "mason-core.result"
+local platform = require "mason-core.platform"
 
 local M = {}
 
@@ -6,6 +8,16 @@ local M = {}
 ---@param purl Purl
 ---@param opts PackageInstallOpts
 function M.parse(spec, purl, opts)
+    if spec.source.supported_platforms then
+        if
+            not _.any(function(target)
+                return platform.is[target]
+            end, spec.source.supported_platforms)
+        then
+            return Result.failure "PLATFORM_UNSUPPORTED"
+        end
+    end
+
     ---@class GemSource : PackageSource
     local source = {
         package = purl.name,

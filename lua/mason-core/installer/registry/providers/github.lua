@@ -64,13 +64,28 @@ local release = {
             local asset = try(util.coalesce_by_target(spec.source.asset, opts):ok_or "PLATFORM_UNSUPPORTED")
 
             local expr_ctx = { version = purl.version }
-            local asset_file_components = _.split(":", asset.file)
-            local source_file = try(expr.eval(_.head(asset_file_components), expr_ctx))
-            local out_file = try(expr.eval(_.last(asset_file_components), expr_ctx))
 
-            if _.matches("/$", out_file) then
-                -- out_file is a dir expression (e.g. "libexec/")
-                out_file = path.concat { out_file, source_file }
+            ---@type { out_file: string, download_url: string }[]
+            local downloads = {}
+
+            for __, file in ipairs(type(asset.file) == "string" and { asset.file } or asset.file) do
+                local asset_file_components = _.split(":", file)
+                local source_file = try(expr.eval(_.head(asset_file_components), expr_ctx))
+                local out_file = try(expr.eval(_.last(asset_file_components), expr_ctx))
+
+                if _.matches("/$", out_file) then
+                    -- out_file is a dir expression (e.g. "libexec/")
+                    out_file = path.concat { out_file, source_file }
+                end
+
+                table.insert(downloads, {
+                    out_file = out_file,
+                    download_url = settings.current.github.download_url_template:format(
+                        ("%s/%s"):format(purl.namespace, purl.name),
+                        purl.version,
+                        source_file
+                    ),
+                })
             end
 
             local interpolated_asset = try(expr.tbl_interpolate(asset, expr_ctx))
@@ -78,12 +93,7 @@ local release = {
             ---@class GitHubReleaseSource : PackageSource
             local source = {
                 asset = interpolated_asset,
-                out_file = out_file,
-                asset_file_download_url = settings.current.github.download_url_template:format(
-                    ("%s/%s"):format(purl.namespace, purl.name),
-                    purl.version,
-                    source_file
-                ),
+                downloads = downloads,
             }
             return source
         end)
@@ -95,19 +105,24 @@ local release = {
     install = function(ctx, source)
         local std = require "mason-core.managers.v2.std"
         return Result.try(function(try)
-            local out_dir = vim.fn.fnamemodify(source.out_file, ":h")
-            local out_file = vim.fn.fnamemodify(source.out_file, ":t")
-            if out_dir ~= "." then
-                try(Result.pcall(function()
-                    ctx.fs:mkdir(out_dir)
+            for __, download in ipairs(source.downloads) do
+                if vim.in_fast_event() then
+                    a.scheduler()
+                end
+                local out_dir = vim.fn.fnamemodify(download.out_file, ":h")
+                local out_file = vim.fn.fnamemodify(download.out_file, ":t")
+                if out_dir ~= "." then
+                    try(Result.pcall(function()
+                        ctx.fs:mkdir(out_dir)
+                    end))
+                end
+                try(ctx:chdir(out_dir, function()
+                    return Result.try(function(try)
+                        try(std.download_file(download.download_url, out_file))
+                        try(std.unpack(out_file))
+                    end)
                 end))
             end
-            try(ctx:chdir(out_dir, function()
-                return Result.try(function(try)
-                    try(std.download_file(source.asset_file_download_url, out_file))
-                    try(std.unpack(out_file))
-                end)
-            end))
         end)
     end,
 }
