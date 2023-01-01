@@ -9,6 +9,9 @@ local expr = require "mason-core.installer.registry.expr"
 local M = {}
 
 local delegates = {
+    ["luarocks"] = function (target)
+        return require("mason-core.managers.v2.luarocks").bin_path(target)
+    end,
     ["composer"] = function (target)
         return require("mason-core.managers.v2.composer").bin_path(target)
     end,
@@ -139,7 +142,7 @@ function M.link(ctx, purl, source)
         end
         local expr_ctx = { version = purl.version, source = source }
         for bin, raw_target in pairs(ctx.package.spec.bin) do
-            local target = try(expr.eval(raw_target, expr_ctx))
+            local target = try(expr.interpolate(raw_target, expr_ctx))
 
             -- Expand "npm:typescript-language-server"-like expressions
             local delegated_bin = _.match("^(.+):(.+)$", target)

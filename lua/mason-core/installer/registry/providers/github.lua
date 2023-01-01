@@ -70,8 +70,8 @@ local release = {
 
             for __, file in ipairs(type(asset.file) == "string" and { asset.file } or asset.file) do
                 local asset_file_components = _.split(":", file)
-                local source_file = try(expr.eval(_.head(asset_file_components), expr_ctx))
-                local out_file = try(expr.eval(_.last(asset_file_components), expr_ctx))
+                local source_file = try(expr.interpolate(_.head(asset_file_components), expr_ctx))
+                local out_file = try(expr.interpolate(_.last(asset_file_components), expr_ctx))
 
                 if _.matches("/$", out_file) then
                     -- out_file is a dir expression (e.g. "libexec/")

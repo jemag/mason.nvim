@@ -15,6 +15,7 @@ local SOURCES = {
     ["generic"] = "mason-core.installer.registry.providers.generic",
     ["github"] = "mason-core.installer.registry.providers.github",
     ["golang"] = "mason-core.installer.registry.providers.golang",
+    ["luarocks"] = "mason-core.installer.registry.providers.luarocks",
     ["npm"] = "mason-core.installer.registry.providers.npm",
     ["nuget"] = "mason-core.installer.registry.providers.nuget",
     ["opam"] = "mason-core.installer.registry.providers.opam",
