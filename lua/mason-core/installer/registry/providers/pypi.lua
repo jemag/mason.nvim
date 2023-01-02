@@ -1,6 +1,7 @@
 local Result = require "mason-core.result"
 local _ = require "mason-core.functional"
 local settings = require "mason.settings"
+local util = require "mason-core.installer.registry.util"
 
 local M = {}
 
@@ -22,7 +23,13 @@ end
 ---@param source PypiSource
 function M.install(ctx, source)
     local pypi = require "mason-core.managers.v2.pypi"
+    local providers = require "mason-core.providers"
+
     return Result.try(function(try)
+        try(util.ensure_valid_version(function()
+            return providers.pypi.get_all_versions(source.package)
+        end))
+
         try(pypi.init {
             upgrade_pip = settings.current.pip.upgrade_pip,
         })

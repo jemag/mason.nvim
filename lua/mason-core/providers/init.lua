@@ -30,11 +30,25 @@ local Result = require "mason-core.result"
 ---@field get_latest_version? async fun(gem: string): Result # Result<RubyGem>
 ---@field get_all_versions? async fun(gem: string): Result # Result<string[]>
 
+---@alias PackagistPackage { name: string, version: string }
+
+---@class PackagistProvider
+---@field get_latest_version? async fun(pkg: string): Result # Result<PackagistPackage>
+---@field get_all_versions? async fun(pkg: string): Result # Result<string[]>
+
+---@alias Crate { name: string, version: string }
+
+---@class CratesProvider
+---@field get_latest_version? async fun(crate: string): Result # Result<Crate>
+---@field get_all_versions? async fun(crate: string): Result # Result<string[]>
+
 ---@class Provider
 ---@field github? GitHubProvider
 ---@field npm? NpmProvider
 ---@field pypi? PyPiProvider
 ---@field rubygems? RubyGemsProvider
+---@field packagist? PackagistProvider
+---@field crates? CratesProvider
 
 local function service_mt(service)
     return setmetatable({}, {

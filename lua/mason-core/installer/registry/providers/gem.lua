@@ -1,6 +1,7 @@
 local _ = require "mason-core.functional"
 local Result = require "mason-core.result"
 local platform = require "mason-core.platform"
+local util = require "mason-core.installer.registry.util"
 
 local M = {}
 
@@ -32,9 +33,17 @@ end
 ---@param source GemSource
 function M.install(ctx, source)
     local gem = require "mason-core.managers.v2.gem"
-    return gem.install(source.package, source.version, {
-        extra_packages = source.extra_packages,
-    })
+    local providers = require "mason-core.providers"
+
+    return Result.try(function(try)
+        try(util.ensure_valid_version(function()
+            return providers.rubygems.get_all_versions(source.package)
+        end))
+
+        try(gem.install(source.package, source.version, {
+            extra_packages = source.extra_packages,
+        }))
+    end)
 end
 
 return M

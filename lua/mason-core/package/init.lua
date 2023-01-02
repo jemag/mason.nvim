@@ -123,7 +123,7 @@ function Package:new_handle()
     return handle
 end
 
----@alias PackageInstallOpts { version: string?, debug: boolean?, target: string? }
+---@alias PackageInstallOpts { version?: string, debug?: boolean, target?: string, force?: boolean }
 
 ---@param opts? PackageInstallOpts
 ---@return InstallHandle

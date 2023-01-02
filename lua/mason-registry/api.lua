@@ -83,7 +83,25 @@ api.rubygems = {
         ---@type ApiSignature<{ gem: string }>
         latest = get "/api/rubygems/{gem}/versions/latest",
         ---@type ApiSignature<{ gem: string }>
-        all = get "/api/rubygemspypi/{gem}/versions/all",
+        all = get "/api/rubygems/{gem}/versions/all",
+    },
+}
+
+api.packagist = {
+    versions = {
+        ---@type ApiSignature<{ pkg: string }>
+        latest = get "/api/packagist/{pkg}/versions/latest",
+        ---@type ApiSignature<{ pkg: string }>
+        all = get "/api/packagist/{pkg}/versions/all",
+    },
+}
+
+api.crate = {
+    versions = {
+        ---@type ApiSignature<{ crate: string }>
+        latest = get "/api/crate/{crate}/versions/latest",
+        ---@type ApiSignature<{ crate: string }>
+        all = get "/api/crate/{crate}/versions/all",
     },
 }
 

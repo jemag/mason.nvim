@@ -1,6 +1,9 @@
 local _ = require "mason-core.functional"
+local installer = require "mason-core.installer"
 local Optional = require "mason-core.optional"
 local platform = require "mason-core.platform"
+local Result = require "mason-core.result"
+local log = require "mason-core.log"
 
 local M = {}
 
@@ -31,6 +34,39 @@ function M.coalesce_by_target(candidates, opts)
             end
         end
     end, candidates))
+end
+
+---Checks whether a custom version of a package installation corresponds to a valid version.
+---@param versions_thunk async fun(): Result Result<string>
+function M.ensure_valid_version(versions_thunk)
+    local ctx = installer.context()
+    local version = ctx.opts.version
+
+    if version and not ctx.opts.force then
+        ctx.stdio_sink.stdout "Fetching available versions…\n"
+        local all_versions = versions_thunk()
+        if all_versions:is_failure() then
+            log.warn("Failed to fetch versions for package %s", ctx.package)
+            -- Gracefully fail (i.e. optimistically continue package installation)
+            return Result.success()
+        end
+        all_versions = all_versions:get_or_else {}
+
+        if not _.any(_.equals(version), all_versions) then
+            ctx.stdio_sink.stderr(("Tried to install invalid version %q. Available versions:\n"):format(version))
+            ctx.stdio_sink.stderr(_.compose(_.join "\n", _.map(_.join ", "), _.split_every(15))(all_versions))
+            ctx.stdio_sink.stderr "\n\n"
+            ctx.stdio_sink.stderr(
+                ("Run with --force flag to bypass version validation:\n  :MasonInstall --force %s@%s\n\n"):format(
+                    ctx.package.name,
+                    version
+                )
+            )
+            return Result.failure(("Version %q is not available."):format(version))
+        end
+    end
+
+    return Result.success()
 end
 
 return M

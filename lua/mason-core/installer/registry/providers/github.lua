@@ -92,6 +92,7 @@ local release = {
 
             ---@class GitHubReleaseSource : PackageSource
             local source = {
+                repo = ("%s/%s"):format(purl.namespace, purl.name),
                 asset = interpolated_asset,
                 downloads = downloads,
             }
@@ -104,7 +105,13 @@ local release = {
     ---@param source GitHubReleaseSource
     install = function(ctx, source)
         local std = require "mason-core.managers.v2.std"
+        local providers = require "mason-core.providers"
+
         return Result.try(function(try)
+            try(util.ensure_valid_version(function()
+                return providers.github.get_all_release_versions(source.repo)
+            end))
+
             for __, download in ipairs(source.downloads) do
                 if vim.in_fast_event() then
                     a.scheduler()

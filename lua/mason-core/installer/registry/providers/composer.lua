@@ -1,4 +1,5 @@
 local Result = require "mason-core.result"
+local util = require "mason-core.installer.registry.util"
 
 local M = {}
 
@@ -19,7 +20,15 @@ end
 ---@param source ComposerSource
 function M.install(ctx, source)
     local composer = require "mason-core.managers.v2.composer"
-    return composer.install(source.package, source.version)
+    local providers = require "mason-core.providers"
+
+    return Result.try(function(try)
+        try(util.ensure_valid_version(function()
+            return providers.packagist.get_all_versions(source.package)
+        end))
+
+        try(composer.install(source.package, source.version))
+    end)
 end
 
 return M

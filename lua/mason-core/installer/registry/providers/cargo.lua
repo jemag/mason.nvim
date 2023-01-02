@@ -1,6 +1,7 @@
 local Result = require "mason-core.result"
 local _ = require "mason-core.functional"
 local platform = require "mason-core.platform"
+local util = require "mason-core.installer.registry.util"
 
 local M = {}
 
@@ -38,14 +39,22 @@ function M.parse(spec, purl)
 end
 
 ---@async
----@param cts InstallContext
+---@param ctx InstallContext
 ---@param source CargoSource
 function M.install(ctx, source)
     local cargo = require "mason-core.managers.v2.cargo"
-    return cargo.install(source.crate, source.version, {
-        git = source.git,
-        features = source.features,
-    })
+    local providers = require "mason-core.providers"
+
+    return Result.try(function(try)
+        try(util.ensure_valid_version(function()
+            return providers.crates.get_all_versions(source.crate)
+        end))
+
+        try(cargo.install(source.crate, source.version, {
+            git = source.git,
+            features = source.features,
+        }))
+    end)
 end
 
 return M

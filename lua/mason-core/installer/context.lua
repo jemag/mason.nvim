@@ -164,6 +164,7 @@ end
 ---@field public handle InstallHandle
 ---@field public package Package
 ---@field public cwd CwdManager
+---@field public opts PackageInstallOpts
 ---@field public stdio_sink StdioSink
 ---@field private bin_links table<string, string>
 local InstallContext = {}
@@ -183,6 +184,7 @@ function InstallContext.new(handle, opts)
         requested_version = Optional.of_nilable(opts.version),
         stdio_sink = handle.stdio.sink,
         bin_links = {},
+        opts = opts,
     }, InstallContext)
 end
 
