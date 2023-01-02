@@ -224,22 +224,27 @@ end
 
 ---@param callback fun(success: boolean, version_or_err: string)
 function Package:get_installed_version(callback)
-    if self.spec.schema == "registry+v1" then
-        local resolve = _.curryN(callback, 2)
-        self:get_receipt()
-            :ok_or("Unable to get receipt.")
-            :map(_.path { "primary_source", "id" })
-            :and_then(function(id)
-                return Purl.parse(id):map(_.prop "version")
-            end)
-            :on_success(resolve(true))
-            :on_failure(resolve(false))
-    else
-        a.run(function()
-            local receipt = self:get_receipt():or_else_throw "Unable to get receipt."
-            return version_checks.get_installed_version(receipt, self:get_install_path()):get_or_throw()
-        end, callback)
-    end
+    self:get_receipt()
+        :if_present(
+            ---@param receipt InstallReceipt
+            function(receipt)
+                if receipt.primary_source.type == "registry+v1" then
+                    local resolve = _.curryN(callback, 2)
+                    Purl.parse(receipt.primary_source.id)
+                        :map(_.prop "version")
+                        :on_success(resolve(true))
+                        :on_failure(resolve(false))
+                else
+                    a.run(function()
+                        local receipt = self:get_receipt():or_else_throw "Unable to get receipt."
+                        return version_checks.get_installed_version(receipt, self:get_install_path()):get_or_throw()
+                    end, callback)
+                end
+            end
+        )
+        :if_not_present(function()
+            callback(false, "Unable to get receipt.")
+        end)
 end
 
 ---@param callback fun(success: boolean, result_or_err: NewPackageVersion)
