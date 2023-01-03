@@ -28,6 +28,13 @@ end
 
 ---@alias ApiSignature<T> fun(path_params: T, opts?: ApiFetchOpts): Result
 
+---@param char string
+local function percent_encode(char)
+    return ("%%%x"):format(string.byte(char, 1, 1))
+end
+
+api.encode_uri_component = _.gsub("[!#%$&'%(%)%*%+,/:;=%?@%[%]]", percent_encode)
+
 ---@param path_template string
 local function get(path_template)
     ---@param path_params table
@@ -102,6 +109,13 @@ api.crate = {
         latest = get "/api/crate/{crate}/versions/latest",
         ---@type ApiSignature<{ crate: string }>
         all = get "/api/crate/{crate}/versions/all",
+    },
+}
+
+api.golang = {
+    versions = {
+        ---@type ApiSignature<{ pkg: string }>
+        all = get "/api/golang/{pkg}/versions/all",
     },
 }
 

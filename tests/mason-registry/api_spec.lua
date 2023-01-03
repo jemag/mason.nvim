@@ -49,4 +49,8 @@ describe("mason-registry API", function()
         assert.spy(fetch).was_called(1)
         assert.spy(fetch).was_called_with(match.is_match "/api/repo/myrepo/name/releases/latest$", match.is_table())
     end)
+
+    it("should percent encode path parameters", function()
+        assert.equals("golang.org%2Fx%2Ftools%2Fgopls", api.encode_uri_component "golang.org/x/tools/gopls")
+    end)
 end)

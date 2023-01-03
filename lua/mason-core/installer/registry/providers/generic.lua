@@ -30,7 +30,6 @@ end
 function M.install(ctx, source)
     local std = require "mason-core.managers.v2.std"
     return Result.try(function(try)
-        -- XXX: might want to parallelize downloads
         for out_file, url in pairs(source.download.files) do
             try(std.download_file(url, out_file))
             try(std.unpack(out_file))

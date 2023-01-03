@@ -61,4 +61,9 @@ return {
             return api.crate.versions.all { crate = crate }
         end,
     },
+    golang = {
+        get_all_versions = function(pkg)
+            return api.golang.versions.all { pkg = api.encode_uri_component(pkg) }
+        end,
+    },
 }
