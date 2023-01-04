@@ -81,12 +81,12 @@ end
 ---@async
 ---@param pkg string
 ---@param version string
----@param opts? { extra_packages?: string[] }
+---@param opts? { extra?: string, extra_packages?: string[] }
 function M.install(pkg, version, opts)
     opts = opts or {}
     log.fmt_debug("pypi: install %s %s", pkg, version, opts)
     return pip_install {
-        ("%s==%s"):format(pkg, version),
+        opts.extra and ("%s[%s]==%s"):format(pkg, opts.extra, version) or ("%s==%s"):format(pkg, version),
         opts.extra_packages or vim.NIL,
     }
 end

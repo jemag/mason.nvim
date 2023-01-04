@@ -12,6 +12,7 @@ function M.parse(spec, purl)
     local source = {
         package = purl.name,
         version = purl.version,
+        extra = _.path({ "qualifiers", "extra" }, purl),
         extra_packages = spec.source.extra_packages,
     }
 
@@ -34,6 +35,7 @@ function M.install(ctx, source)
             upgrade_pip = settings.current.pip.upgrade_pip,
         })
         try(pypi.install(source.package, source.version, {
+            extra = source.extra,
             extra_packages = source.extra_packages,
         }))
     end)
